@@ -1,0 +1,6 @@
+{% extends "layouts/app.html" %}
+{% block title %}My Clubs{% endblock %}
+{% block page_title %}My Clubs{% endblock %}
+{% block content %}
+{% for club in clubs %}<article class="info-card"><h2>{{ club.name }}</h2><p>{{ club.description }}</p><h3>Associated events</h3><ul>{% for event in events if event.id in club.event_ids %}<li>{{ event.name }} · {{ event.date }} · {{ event.venue }}</li>{% else %}<li>No associated events.</li>{% endfor %}</ul></article>{% else %}<p class="empty">No clubs assigned to you.</p>{% endfor %}
+{% endblock %}

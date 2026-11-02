@@ -1,0 +1,6 @@
+<fieldset class="field"><legend>Events</legend><div class="checkbox-grid">
+{% for event in events %}<label class="checkbox-row"><input type="checkbox" name="event_ids" value="{{ event.id }}" {% if event.id in selected_events %}checked{% endif %} /><span>{{ event.name }}</span></label>{% else %}<span class="muted">No events available.</span>{% endfor %}
+</div></fieldset>
+<fieldset class="field"><legend>Faculty coordinators</legend><div class="checkbox-grid">
+{% for coordinator in coordinators %}<label class="checkbox-row"><input type="checkbox" name="coordinator_ids" value="{{ coordinator.id }}" {% if coordinator.id in selected_coordinators %}checked{% endif %} /><span>{{ coordinator.name }}</span></label>{% else %}<span class="muted">No faculty coordinators available.</span>{% endfor %}
+</div></fieldset>

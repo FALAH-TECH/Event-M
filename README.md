@@ -16,7 +16,7 @@ Open http://127.0.0.1:5000
 | Email | Password | Role |
 |-------|----------|------|
 | admin@eventhub.edu | admin123 | Admin |
-| priya@mit.edu | manager123 | Team Manager |
+| priya@mit.edu | manager123 | Faculty Coordinator |
 | ananya@student.edu | part123 | Participant |
 
 Login has no role selector — role is read from user data and redirects automatically.

@@ -187,6 +187,29 @@ EVENTS = [
     },
 ]
 
+# Provisional application-only stores. Activity locations remain free text.
+VENUES = [
+    {"id": f"v{index}", "name": name}
+    for index, name in enumerate(dict.fromkeys(
+        [event["venue"] for event in EVENTS] +
+        [item["venue"] for event in EVENTS for item in event["items"]]
+    ), 1)
+]
+CLUBS = []
+
+
+def clubs_for_event(event_id):
+    return [club for club in CLUBS if event_id in club["event_ids"]]
+
+
+def clubs_for_coordinator(user_id):
+    return [club for club in CLUBS if user_id in club["coordinator_ids"]]
+
+
+def venue_by_name(name):
+    return next((venue for venue in VENUES if venue["name"] == name), None)
+
+
 # Registrations: participant can register for multiple items within same event
 REGISTRATIONS = [
     {"id": "r1", "participantId": "u4", "eventId": "e1", "itemIds": ["i1", "i3"]},
@@ -337,6 +360,8 @@ def snapshot():
     """Deep copy of all mutable stores (useful for resets in tests)."""
     return {
         "users": deepcopy(USERS),
+        "clubs": deepcopy(CLUBS),
+        "venues": deepcopy(VENUES),
         "events": deepcopy(EVENTS),
         "registrations": deepcopy(REGISTRATIONS),
         "item_results": deepcopy(ITEM_RESULTS),
