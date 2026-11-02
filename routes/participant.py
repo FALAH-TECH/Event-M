@@ -11,6 +11,7 @@ from flask import (
 )
 
 import data
+import mysql.connector
 from routes.decorators import login_required
 
 participant_bp = Blueprint("participant", __name__)
@@ -177,18 +178,13 @@ def schedule():
 def profile():
     user = data.get_user_by_id(session["user_id"])
     if request.method == "POST":
-        user["name"] = request.form.get("name", user["name"]).strip()
-        user["email"] = request.form.get("email", user["email"]).strip()
-        user["college"] = request.form.get("college", user.get("college", "")).strip()
-        user["roll_number"] = request.form.get(
-            "roll_number", user.get("roll_number", "")
-        ).strip()
-        new_pw = request.form.get("password", "").strip()
-        if new_pw:
-            user["password"] = new_pw
-        session["name"] = user["name"]
-        session["email"] = user["email"]
-        flash("Profile updated.", "success")
+        try:
+            data.save_user(dict(request.form), user["id"])
+            updated = data.get_user_by_id(user["id"])
+            session["name"], session["email"] = updated["name"], updated["email"]
+            flash("Profile updated.", "success")
+        except (ValueError, mysql.connector.IntegrityError):
+            flash("Unable to update profile; check your details.", "error")
         return redirect(url_for("participant.profile"))
 
     regs = data.get_registrations_for_participant(user["id"])

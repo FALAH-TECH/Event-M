@@ -11,6 +11,8 @@ from flask import (
 )
 
 import data
+import mysql.connector
+from werkzeug.security import check_password_hash
 from routes.auth_utils import ROLE_HOME
 
 auth_bp = Blueprint("auth", __name__)
@@ -27,7 +29,7 @@ def login():
         password = request.form.get("password", "")
 
         user = data.get_user_by_email(email)
-        if user and user["password"] == password:
+        if user and check_password_hash(user["password_hash"], password):
             session.clear()
             session["user_id"] = user["id"]
             session["role"] = user["role"]
@@ -84,16 +86,13 @@ def register():
                 roll_number=roll_number,
             )
 
-        new_user = {
-            "id": data.next_id("u", data.USERS),
-            "name": name,
-            "email": email,
-            "password": password,
-            "role": "participant",
-            "college": college,
-            "roll_number": roll_number,
-        }
-        data.USERS.append(new_user)
+        try:
+            data.save_user({"name": name, "email": email, "password": password,
+                            "role": "participant", "college": college,
+                            "roll_number": roll_number})
+        except (ValueError, mysql.connector.IntegrityError):
+            flash("Unable to create account; check the details and email address.", "error")
+            return render_template("register.html", name=name, email=email, college=college, roll_number=roll_number)
         flash("Account created. Please log in.", "success")
         return redirect(url_for("auth.login"))
 

@@ -1,25 +1,48 @@
-# Phase 6 integration status
+# Phase 6 architecture
 
-Phase 6 is **not yet integrated**. The currently active browser request path is
-`app.py` → a blueprint in `routes/` → `data.py`'s in-memory collections → a
-Jinja template in `templates/`. A Flask restart discards changes. Authentication
-also still uses the Phase 2 plaintext demo data. Do not use this implementation
-as a persistent or production service.
+A browser request reaches `app.py`, which loads `.env`, configures Flask and
+registers the role blueprints. `routes/decorators.py` checks the session role
+before protected routes run. For example, `routes/admin.py:events()` calls
+`data.get_events()` to display events and `data.save_event()` to create one.
+The route passes the returned dictionaries to the existing Jinja templates.
 
-The new `database.py` is preparatory infrastructure and is not yet called by
-the blueprints. Its `connect()` reads MySQL settings from environment variables;
-`transaction()` commits successful work and rolls back exceptions. The intended
-path is browser → Flask blueprint → explicit data-access functions →
-`database.connect()` or `database.transaction()` → MySQL → template. All
-existing list reads and mutations need to be replaced before that path is active.
+`data.py` is the repository and the single mapping between MySQL and the
+existing template keys. `data.cursor()` uses `database.transaction()` to open
+a connection, commit successful operations, roll back exceptions and close it.
+All values supplied by users are sent as parameters. Multi-table changes such as
+an activity and its schedule, a club and its associations, a coordinator and
+assignments, standings, or a registration and its selected activities share a
+transaction. `database.new_id()` creates string IDs using UUIDs. Foreign-key
+restrictions are retained; activity deletion removes its owned schedule inside
+the same transaction and rolls back if other references prevent deletion.
 
-`verify_mysql.py` loads `.env` and performs only `SELECT DATABASE()`, `SHOW
-TABLES`, and fixed count queries. Copy `.env.example` to `.env`, configure the
-local values, install `requirements.txt`, and run `python verify_mysql.py`.
-The password and Flask secret must remain private. The reference SQL in
-`docs/database/` must not be executed against the existing database.
+| Application dictionaries | MySQL tables |
+| --- | --- |
+| Users, college, assigned events | `users`, `colleges`, `coordinator_events` |
+| Events and `items` | `events`, `activities`, `venues`, `schedules` |
+| Clubs and associations | `clubs`, `club_events`, `club_coordinators` |
+| Registrations and `itemIds` | `registrations`, `registration_activities` |
+| Activity results | `activity_results` |
+| Overall results and entries | `event_results`, `event_standings`, `colleges` |
 
-Persistence testing is pending integration: after implementation, create an
-event through the admin UI, note its name, stop and restart Flask, and confirm
-the event is present both in the UI and with a parameterized read-only MySQL
-query. Do not delete the test event without the owner's approval.
+`routes/auth.py:login()` loads the user through the repository and verifies the
+Werkzeug password hash. New or changed passwords are hashed in `data.save_user()`.
+Existing participant registration by a coordinator retains the original demo
+password behavior for newly created accounts; change this password after login.
+Participant results use the repository's published-only queries. Coordinator
+views are restricted to assigned events. The database is the source of truth;
+there is no in-memory fallback.
+
+Copy `.env.example` to `.env`, set `MYSQL_PASSWORD` and a long random
+`FLASK_SECRET_KEY`, install `requirements.txt`, and run `python verify_mysql.py`
+for read-only inventory before starting `python app.py`. The SQL in
+`docs/database/` is reference material and must not be re-executed against the
+existing database. `python -m unittest discover -s tests -v` uses mocks for
+writes and does not modify MySQL.
+
+To test persistence, create a clearly named event through the administrator UI,
+restart Flask, and look for it on the events page. A read-only parameterized
+query of `events` can independently confirm it. To test registration persistence,
+create an activity for that event and register a participant through Data Entry,
+then check `registrations` and `registration_activities`. Test records are real
+records; obtain approval before deleting them.

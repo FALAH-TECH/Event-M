@@ -14,10 +14,14 @@ def new_id(prefix):
     return prefix + uuid4().hex
 
 
+class DatabaseConfigurationError(RuntimeError):
+    """Required local database configuration is missing."""
+
+
 def connection_config():
     password = os.environ.get("MYSQL_PASSWORD")
     if not password:
-        raise RuntimeError("MYSQL_PASSWORD must be configured in the environment or .env")
+        raise DatabaseConfigurationError("MYSQL_PASSWORD must be configured in the environment or .env")
     return {
         "host": os.environ.get("MYSQL_HOST", "127.0.0.1"),
         "port": int(os.environ.get("MYSQL_PORT", "3306")),

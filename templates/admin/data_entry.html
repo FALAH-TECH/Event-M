@@ -49,7 +49,7 @@
       <label class="field"><span>Name</span><input type="text" name="name" required /></label>
       <label class="field"><span>Category</span><input type="text" name="category" required /></label>
       <label class="field"><span>Date / Time</span><input type="datetime-local" name="dateTime" required /></label>
-      <label class="field"><span>Venue</span><input type="text" name="venue" required /></label>
+      <label class="field"><span>Venue</span><select name="venue" required><option value="">Select a venue…</option>{% for venue in venues %}<option value="{{ venue.name }}">{{ venue.name }}</option>{% endfor %}</select></label>
       <label class="field"><span>Max participants</span><input type="number" name="maxParticipants" value="50" /></label>
       <label class="field full"><span>Rules</span><textarea name="rules" rows="2"></textarea></label>
       <div class="form-actions"><button type="submit" class="btn btn-primary">Add item</button></div>
