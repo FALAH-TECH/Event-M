@@ -8,6 +8,7 @@ from flask import (
     url_for,
     flash,
     session,
+    abort,
 )
 
 import data
@@ -29,7 +30,7 @@ def home():
 
     for reg in regs:
         event = data.get_event_by_id(reg["eventId"])
-        if not event:
+        if not event or not event["published"]:
             continue
         if event["id"] not in seen_events:
             upcoming_events.append(event)
@@ -38,7 +39,7 @@ def home():
             if item["id"] in reg["itemIds"]:
                 registered_items.append({"event": event, "item": item})
 
-    all_events = data.get_events()
+    all_events = [event for event in data.get_events() if event["published"]]
     return render_template(
         "participant/home.html",
         user=user,
@@ -47,6 +48,61 @@ def home():
         all_events=all_events,
         clubs_for_event=data.clubs_for_event,
     )
+
+
+def _student():
+    user = data.get_user_by_id(session["user_id"])
+    if not user or user.get("role") != "participant":
+        session.clear()
+        abort(403)
+    return user
+
+
+@participant_bp.route("/events")
+@login_required(role="participant")
+def events():
+    _student()
+    return render_template("participant/events.html", events=[e for e in data.get_events() if e["published"]])
+
+
+@participant_bp.route("/events/<event_id>")
+@login_required(role="participant")
+def event_detail(event_id):
+    user = _student()
+    event = data.get_event_by_id(event_id)
+    if not event or not event["published"]:
+        abort(404)
+    regs = data.get_registrations_for_participant(user["id"])
+    selected = {iid for r in regs if r["eventId"] == event_id for iid in r["itemIds"]}
+    activities = []
+    for item in event["items"]:
+        available = max(0, item["maxParticipants"] - data.count_participants_for_item(item["id"]))
+        activities.append({"item": item, "available": available, "registered": item["id"] in selected})
+    return render_template("participant/event_detail.html", event=event, activities=activities)
+
+
+@participant_bp.route("/events/<event_id>/register", methods=["POST"])
+@login_required(role="participant")
+def register_event(event_id):
+    user = _student()
+    try:
+        added = data.register(user["id"], event_id, request.form.getlist("itemIds"))
+        flash("Registration successful." if added else "You are already registered for the selected activities.", "success")
+    except ValueError as exc:
+        flash(str(exc), "error")
+    return redirect(url_for("participant.event_detail", event_id=event_id))
+
+
+@participant_bp.route("/registrations")
+@login_required(role="participant")
+def registrations():
+    user = _student()
+    rows = []
+    for reg in data.get_registrations_for_participant(user["id"]):
+        event = data.get_event_by_id(reg["eventId"])
+        if event and event["published"]:
+            rows.append({"event": event, "items": [i for i in event["items"] if i["id"] in reg["itemIds"]]})
+    return render_template("participant/registrations.html", rows=rows)
 
 
 @participant_bp.route("/results")

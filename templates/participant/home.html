@@ -4,6 +4,8 @@
 
 {% block content %}
 <section class="quick-links">
+  <a href="{{ url_for('participant.events') }}" class="quick-link">Browse Events</a>
+  <a href="{{ url_for('participant.registrations') }}" class="quick-link">My Registrations</a>
   <a href="{{ url_for('participant.schedule') }}" class="quick-link">Schedule</a>
   <a href="{{ url_for('participant.results') }}" class="quick-link">Results</a>
   <a href="{{ url_for('participant.profile') }}" class="quick-link">Profile</a>
@@ -33,11 +35,12 @@
 </section>
 
 <section class="section">
-  <h2>Upcoming events</h2>
+  <h2>Events</h2>
   <div class="card-grid">
     {% for e in upcoming_events %}
     <article class="info-card">
       <h3>{{ e.name }}</h3>
+      <a href="{{ url_for('participant.event_detail', event_id=e.id) }}">Details / Register</a>
       <p class="muted">{{ e.description }}</p>
       {% for club in clubs_for_event(e.id) %}<span class="tag">{{ club.name }}</span> {% endfor %}
       <p class="meta-row"><span>{{ e.date }}</span><span>{{ e.venue }}</span></p>

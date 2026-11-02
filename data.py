@@ -218,24 +218,47 @@ def save_club(values, cid=None):
 def delete_club(cid):
     with cursor(True) as c: c.execute('DELETE FROM clubs WHERE club_id=%s',(cid,))
 
-def register(pid,eid,item_ids, new_user=None):
-    item_ids=set(item_ids)
-    if not item_ids: raise ValueError('Select at least one activity.')
+def register(pid, eid, item_ids, new_user=None):
+    """Register atomically; all callers serialize on the published event row."""
+    item_ids = sorted(set(item_ids))
+    if not item_ids:
+        raise ValueError('Select at least one activity.')
     with cursor(True) as c:
+        c.execute('SELECT event_id FROM events WHERE event_id=%s AND published=1 FOR UPDATE', (eid,))
+        if not c.fetchone():
+            raise ValueError('Event not found or not published.')
         if new_user:
-            name=new_user.get('name','').strip(); email=new_user.get('email','').strip()
-            if not name or '@' not in email or not new_user.get('college','').strip() or not new_user.get('roll_number','').strip(): raise ValueError('Participant details are required.')
-            college=_college(c,new_user['college'].strip()); pid=database.new_id('u')
-            c.execute('INSERT INTO users (user_id,name,email,password_hash,role,college_id,roll_number) VALUES (%s,%s,%s,%s,%s,%s,%s)',(pid,name,email,generate_password_hash('part123'),'participant',college,new_user['roll_number'].strip()))
-        c.execute('SELECT user_id FROM users WHERE user_id=%s AND role=%s',(pid,'participant'))
-        if not c.fetchone(): raise ValueError('Select a valid participant.')
+            name = new_user.get('name', '').strip(); email = new_user.get('email', '').strip()
+            if not name or '@' not in email or not new_user.get('college', '').strip() or not new_user.get('roll_number', '').strip():
+                raise ValueError('Participant details are required.')
+            college = _college(c, new_user['college'].strip()); pid = database.new_id('u')
+            c.execute('INSERT INTO users (user_id,name,email,password_hash,role,college_id,roll_number) VALUES (%s,%s,%s,%s,%s,%s,%s)', (pid,name,email,generate_password_hash('part123'),'participant',college,new_user['roll_number'].strip()))
+        c.execute('SELECT user_id FROM users WHERE user_id=%s AND role=%s FOR UPDATE', (pid, 'participant'))
+        if not c.fetchone():
+            raise ValueError('Select a valid participant.')
+        c.execute('SELECT registration_id FROM registrations WHERE participant_id=%s AND event_id=%s FOR UPDATE', (pid, eid))
+        existing = c.fetchone()
+        rid = existing['registration_id'] if existing else None
+        additions = []
         for iid in item_ids:
-            c.execute('SELECT activity_id FROM activities WHERE activity_id=%s AND event_id=%s',(iid,eid))
-            if not c.fetchone(): raise ValueError('Each activity must belong to the selected event.')
-        rid=database.new_id('r')
-        c.execute('INSERT INTO registrations (registration_id,participant_id,event_id) VALUES (%s,%s,%s) ON DUPLICATE KEY UPDATE registration_id=registration_id',(rid,pid,eid))
-        c.execute('SELECT registration_id FROM registrations WHERE participant_id=%s AND event_id=%s',(pid,eid)); rid=c.fetchone()['registration_id']
-        for iid in item_ids: c.execute('INSERT INTO registration_activities (registration_id,activity_id,event_id) VALUES (%s,%s,%s) ON DUPLICATE KEY UPDATE activity_id=activity_id',(rid,iid,eid))
+            c.execute('SELECT activity_id,max_participants FROM activities WHERE activity_id=%s AND event_id=%s FOR UPDATE', (iid, eid))
+            activity = c.fetchone()
+            if not activity:
+                raise ValueError('Each activity must belong to the selected event.')
+            c.execute('SELECT registration_id FROM registration_activities WHERE activity_id=%s FOR UPDATE', (iid,))
+            registrations = c.fetchall()
+            if rid and any(row['registration_id'] == rid for row in registrations):
+                continue
+            if len(registrations) >= activity['max_participants']:
+                raise ValueError('An activity is full. Please review available seats.')
+            additions.append(iid)
+        if not rid:
+            rid = database.new_id('r')
+            c.execute('INSERT INTO registrations (registration_id,participant_id,event_id) VALUES (%s,%s,%s)', (rid, pid, eid))
+        for iid in additions:
+            c.execute('INSERT INTO registration_activities (registration_id,activity_id,event_id) VALUES (%s,%s,%s)', (rid, iid, eid))
+        return len(additions)
+
 
 def save_item_result(eid,iid,pid,rank,score,medal,published):
     try:

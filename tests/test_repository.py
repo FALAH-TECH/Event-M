@@ -13,7 +13,8 @@ class RepositoryTests(unittest.TestCase):
         return cur, context
 
     def test_registration_validates_event_and_writes_both_tables(self):
-        cur,context=self.fake_cursor([{'user_id':'u1'},{'activity_id':'i1'},{'registration_id':'r1'}])
+        cur,context=self.fake_cursor([{'event_id':'e1'},{'user_id':'u1'},None,{'activity_id':'i1','max_participants':10}])
+        cur.fetchall.return_value = []
         with patch.object(data,'cursor',context): data.register('u1','e1',['i1'])
         statements=[call.args[0] for call in cur.execute.call_args_list]
         self.assertTrue(any('INSERT INTO registrations ' in s for s in statements))
@@ -21,7 +22,7 @@ class RepositoryTests(unittest.TestCase):
         self.assertTrue(any('activity_id=%s AND event_id=%s' in s for s in statements))
 
     def test_registration_rejects_activity_from_other_event(self):
-        cur,context=self.fake_cursor([{'user_id':'u1'},None])
+        cur,context=self.fake_cursor([{'event_id':'e1'},{'user_id':'u1'},None,None])
         with patch.object(data,'cursor',context):
             with self.assertRaises(ValueError): data.register('u1','e1',['bad'])
         self.assertFalse(any('INSERT INTO registrations ' in call.args[0] for call in cur.execute.call_args_list))

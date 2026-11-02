@@ -1,0 +1,12 @@
+{% extends "layouts/app.html" %}
+{% block title %}My Registrations{% endblock %}
+{% block page_title %}My Registrations{% endblock %}
+{% block content %}
+<div class="card-grid">
+{% for row in rows %}
+  <article class="info-card"><h2><a href="{{ url_for('participant.event_detail', event_id=row.event.id) }}">{{ row.event.name }}</a></h2>
+  <p>{{ row.event.date }} · {{ row.event.venue }}</p>
+  <ul>{% for item in row['items'] %}<li>{{ item.name }} — {{ item.dateTime.replace('T', ' ') }} · {{ item.venue or 'Venue not specified' }}</li>{% endfor %}</ul></article>
+{% else %}<p class="empty">You have no registrations yet. <a href="{{ url_for('participant.events') }}">Browse events</a>.</p>{% endfor %}
+</div>
+{% endblock %}
