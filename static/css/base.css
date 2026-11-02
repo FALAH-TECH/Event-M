@@ -636,8 +636,6 @@ p {
 :root { color-scheme: dark; }
 .sidebar-user { overflow-wrap: anywhere; }
 .sidebar-nav { min-height: 0; padding-bottom: 0.75rem; }
-.sidebar.collapsed .nav-link.text-only span { display: block; font-size: 0.65rem; }
-.sidebar.collapsed .nav-link.text-only { padding: 0.5rem 0.15rem; overflow-wrap: anywhere; }
 .topbar { height: auto; min-height: var(--topbar-h); flex-wrap: wrap; padding-block: 0.75rem; }
 .topbar-title { min-width: 0; flex: 1; overflow-wrap: anywhere; }
 .topbar-actions { flex-wrap: wrap; }
@@ -652,3 +650,7 @@ p {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
+
+/* Keep navigation labels on one axis and one row. */
+.nav-link > span { white-space: nowrap; }
+.sidebar-nav .nav-link { flex-shrink: 0; }
