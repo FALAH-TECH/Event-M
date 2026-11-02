@@ -77,6 +77,38 @@ class EventIdTests(unittest.TestCase):
                 list(executor.map(lambda _: data.save_event(self.values), range(25)))
         self.assertEqual(set(db.ids[2:]), {f'e{i}' for i in range(4, 29)})
 
+    def test_edit_does_not_allocate_an_id(self):
+        from unittest.mock import Mock
+        cur = Mock()
+        cur.fetchone.return_value = {'venue_id': 'v1'}
+
+        @contextmanager
+        def fake_cursor(write=False):
+            yield cur
+
+        with patch.object(data, 'cursor', fake_cursor):
+            data.save_event(self.values, 'existing-uuid')
+        statements = [call.args[0] for call in cur.execute.call_args_list]
+        self.assertTrue(any('UPDATE events' in sql for sql in statements))
+        self.assertFalse(any('GET_LOCK' in sql or 'INSERT INTO events' in sql for sql in statements))
+
+    def test_connection_closes_after_commit_or_rollback(self):
+        from unittest.mock import Mock, call
+        import database
+
+        for failure in (False, True):
+            connection = Mock()
+            with patch.object(database, 'connect', return_value=connection):
+                try:
+                    with data.cursor(True):
+                        if failure:
+                            raise RuntimeError('insert failed')
+                except RuntimeError:
+                    pass
+            expected = call.rollback() if failure else call.commit()
+            calls = connection.mock_calls
+            self.assertLess(calls.index(expected), calls.index(call.close()))
+
     def test_lock_failure_does_not_insert(self):
         class BusyCursor:
             def execute(self, sql, params): pass
