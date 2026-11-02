@@ -12,7 +12,14 @@ a connection, commit successful operations, roll back exceptions and close it.
 All values supplied by users are sent as parameters. Multi-table changes such as
 an activity and its schedule, a club and its associations, a coordinator and
 assignments, standings, or a registration and its selected activities share a
-transaction. `database.new_id()` creates string IDs using UUIDs. Foreign-key
+transaction. `database.new_id()` creates UUID-based IDs for all entities except
+events. Event creation uses `data.next_event_id()` and a MySQL advisory lock held
+until the insertion commits and its connection closes. It reads numeric `e` IDs
+using a current locking read, ignores UUID-style IDs, and starts at `e4`. All
+event writers must use the same lock for concurrent allocation to be safe.
+The lock is local to one MySQL server and is not a distributed sequence. If the
+highest numeric event is deleted, its ID can be reused; avoiding reuse requires
+a durable sequence or counter, which this schema does not provide. Foreign-key
 restrictions are retained; activity deletion removes its owned schedule inside
 the same transaction and rolls back if other references prevent deletion.
 

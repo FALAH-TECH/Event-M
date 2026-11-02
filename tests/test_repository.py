@@ -27,7 +27,8 @@ class RepositoryTests(unittest.TestCase):
         self.assertFalse(any('INSERT INTO registrations ' in call.args[0] for call in cur.execute.call_args_list))
 
     def test_event_insert_uses_venue_id_and_parameters(self):
-        cur,context=self.fake_cursor([{'venue_id':'v1'}])
+        cur,context=self.fake_cursor([{'venue_id':'v1'}, {'acquired':1}])
+        cur.fetchall.return_value = [{'event_id':'e1'}, {'event_id':'e2'}]
         with patch.object(data,'cursor',context): data.save_event({'name':'Test','date':'2027-01-01','venue':'Hall'})
         sql,params=cur.execute.call_args_list[-1].args
         self.assertIn('INSERT INTO events',sql); self.assertIn('%s',sql)

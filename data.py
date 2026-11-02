@@ -142,6 +142,23 @@ def _venue(c, name):
     if not row: raise ValueError('Select a valid venue.')
     return row['venue_id']
 
+def next_event_id(c):
+    """Allocate under a connection-scoped lock held through commit and close.
+
+    FOR UPDATE is a current read even if an earlier lookup opened an InnoDB
+    repeatable-read snapshot while this connection was waiting for the lock.
+    """
+    c.execute('SELECT GET_LOCK(%s, %s) AS acquired', ('aether.events.sequential-id', 10))
+    if c.fetchone()['acquired'] != 1:
+        raise ValueError('Event ID allocation is busy. Please try again.')
+    c.execute("SELECT event_id FROM events WHERE REGEXP_LIKE(event_id, '^e[0-9]+$', 'c') FOR UPDATE")
+    highest = max((int(row['event_id'][1:]) for row in c.fetchall()), default=3)
+    event_id = 'e' + str(max(3, highest) + 1)
+    if len(event_id) > 40:
+        raise ValueError('No sequential event IDs remain within the database ID limit.')
+    return event_id
+
+
 def save_event(values, eid=None):
     name = values.get('name','').strip()
     if not name: raise ValueError('Event name is required.')
@@ -151,7 +168,7 @@ def save_event(values, eid=None):
         venue = _venue(c, values.get('venue',''))
         args = (name,values.get('description','').strip(),values['date'],venue)
         if eid: c.execute('UPDATE events SET name=%s,description=%s,event_date=%s,venue_id=%s WHERE event_id=%s', (*args,eid))
-        else: c.execute('INSERT INTO events (event_id,name,description,event_date,venue_id,banner,published) VALUES (%s,%s,%s,%s,%s,%s,1)', (database.new_id('e'),*args,'/static/img/banner-tech.svg'))
+        else: c.execute('INSERT INTO events (event_id,name,description,event_date,venue_id,banner,published) VALUES (%s,%s,%s,%s,%s,%s,1)', (next_event_id(c),*args,'/static/img/banner-tech.svg'))
 
 def delete_event(eid):
     with cursor(True) as c: c.execute('DELETE FROM events WHERE event_id=%s',(eid,))
