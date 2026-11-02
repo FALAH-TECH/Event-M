@@ -76,7 +76,7 @@
       <label class="field"><span>Name</span><input type="text" name="name" id="itemName" required /></label>
       <label class="field"><span>Category</span><input type="text" name="category" id="itemCategory" required /></label>
       <label class="field"><span>Date / Time</span><input type="datetime-local" name="dateTime" id="itemDateTime" required /></label>
-      <label class="field"><span>Venue</span><input type="text" name="venue" id="itemVenue" required /></label>
+      <label class="field"><span>Venue</span><select name="venue" id="itemVenue" required><option value="">Select a venue…</option>{% for venue in venues %}<option value="{{ venue.name }}">{{ venue.name }}</option>{% endfor %}</select></label>
       <label class="field"><span>Rules</span><textarea name="rules" id="itemRules" rows="3"></textarea></label>
       <label class="field"><span>Max participants</span><input type="number" name="maxParticipants" id="itemMax" min="1" value="50" /></label>
       <div class="modal-actions">
