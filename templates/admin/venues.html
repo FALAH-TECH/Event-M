@@ -1,0 +1,10 @@
+{% extends "layouts/app.html" %}
+{% block title %}Venues{% endblock %}
+{% block page_title %}Venues{% endblock %}
+{% block content %}
+<section class="section"><h2>Add venue</h2>
+<form method="post" class="form"><input type="hidden" name="action" value="create" /><label class="field"><span>Name</span><input name="name" required maxlength="120" /></label><button class="btn btn-primary">Add venue</button></form></section>
+<section class="section"><h2>Existing venues</h2><div class="table-wrap"><table class="table"><thead><tr><th>Name</th><th>Actions</th></tr></thead><tbody>
+{% for venue in venues %}<tr><td><form method="post" class="inline-form"><input type="hidden" name="action" value="edit" /><input type="hidden" name="id" value="{{ venue.id }}" /><input name="name" value="{{ venue.name }}" required maxlength="120" /><button class="btn btn-ghost btn-sm">Save</button></form></td><td><form method="post" onsubmit="return confirm('Delete this venue?');"><input type="hidden" name="action" value="delete" /><input type="hidden" name="id" value="{{ venue.id }}" /><button class="btn btn-danger btn-sm">Delete</button></form></td></tr>{% else %}<tr><td colspan="2">No venues yet.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

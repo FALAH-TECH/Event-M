@@ -43,6 +43,14 @@ def dashboard():
     )
 
 
+@manager_bp.route("/clubs")
+@login_required(role="manager")
+def clubs():
+    clubs = data.clubs_for_coordinator(session["user_id"])
+    # Club membership grants visibility only; existing assigned-event permissions remain unchanged.
+    return render_template("manager/clubs.html", clubs=clubs, events=data.EVENTS)
+
+
 @manager_bp.route("/participants", methods=["GET", "POST"])
 @login_required(role="manager")
 def participants():
@@ -157,7 +165,7 @@ def events():
                 "participant_count": data.count_participants_for_event(e["id"]),
             }
         )
-    return render_template("manager/events.html", events=events_list)
+    return render_template("manager/events.html", events=events_list, clubs_for_event=data.clubs_for_event)
 
 
 @manager_bp.route("/schedule")

@@ -44,6 +44,7 @@ def home():
         registered_items=registered_items,
         upcoming_events=upcoming_events or all_events[:2],
         all_events=all_events,
+        clubs_for_event=data.clubs_for_event,
     )
 
 

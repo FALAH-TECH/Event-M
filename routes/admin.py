@@ -16,6 +16,82 @@ from routes.decorators import login_required
 admin_bp = Blueprint("admin", __name__)
 
 
+@admin_bp.route("/clubs", methods=["GET", "POST"])
+@login_required(role="admin")
+def clubs():
+    if request.method == "POST":
+        action = request.form.get("action")
+        club = next((c for c in data.CLUBS if c["id"] == request.form.get("id")), None)
+        if action in ("create", "edit"):
+            name = request.form.get("name", "").strip()
+            event_ids = list(dict.fromkeys(request.form.getlist("event_ids")))
+            coordinator_ids = list(dict.fromkeys(request.form.getlist("coordinator_ids")))
+            if action == "edit" and not club:
+                flash("Club not found.", "error")
+            elif not name:
+                flash("Club name is required.", "error")
+            elif any(c["name"].casefold() == name.casefold() and c is not club for c in data.CLUBS):
+                flash("A club with that name already exists.", "error")
+            elif not set(event_ids) <= {e["id"] for e in data.EVENTS} or not set(coordinator_ids) <= {u["id"] for u in data.get_managers()}:
+                flash("Select valid events and faculty coordinators.", "error")
+            else:
+                values = {"name": name, "description": request.form.get("description", "").strip(), "event_ids": event_ids, "coordinator_ids": coordinator_ids}
+                if club:
+                    club.update(values)
+                else:
+                    data.CLUBS.append({"id": data.next_id("c", data.CLUBS), **values})
+                flash("Club saved.", "success")
+        elif action == "delete":
+            if not club:
+                flash("Club not found.", "error")
+            elif any(data.get_event_by_id(eid) for eid in club["event_ids"]):
+                flash("Remove the club's event associations before deleting it.", "error")
+            else:
+                data.CLUBS.remove(club)
+                flash("Club deleted.", "success")
+        return redirect(url_for("admin.clubs"))
+    return render_template("admin/clubs.html", clubs=data.CLUBS, events=data.EVENTS, coordinators=data.get_managers())
+
+
+@admin_bp.route("/venues", methods=["GET", "POST"])
+@login_required(role="admin")
+def venues():
+    if request.method == "POST":
+        action = request.form.get("action")
+        venue = next((v for v in data.VENUES if v["id"] == request.form.get("id")), None)
+        if action in ("create", "edit"):
+            name = request.form.get("name", "").strip()
+            if action == "edit" and not venue:
+                flash("Venue not found.", "error")
+            elif not name:
+                flash("Venue name is required.", "error")
+            elif any(v["name"].casefold() == name.casefold() and v is not venue for v in data.VENUES):
+                flash("A venue with that name already exists.", "error")
+            elif venue:
+                old_name = venue["name"]
+                venue["name"] = name
+                for event in data.EVENTS:
+                    if event.get("venue", "").strip().casefold() == old_name.casefold():
+                        event["venue"] = name
+                    for item in event["items"]:
+                        if item.get("venue", "").strip().casefold() == old_name.casefold():
+                            item["venue"] = name
+                flash("Venue updated.", "success")
+            else:
+                data.VENUES.append({"id": data.next_id("v", data.VENUES), "name": name})
+                flash("Venue created.", "success")
+        elif action == "delete":
+            if not venue:
+                flash("Venue not found.", "error")
+            elif any(event.get("venue", "").strip().casefold() == venue["name"].casefold() or any(item.get("venue", "").strip().casefold() == venue["name"].casefold() for item in event["items"]) for event in data.EVENTS):
+                flash("Venue is still used by an event or activity.", "error")
+            else:
+                data.VENUES.remove(venue)
+                flash("Venue deleted.", "success")
+        return redirect(url_for("admin.venues"))
+    return render_template("admin/venues.html", venues=data.VENUES)
+
+
 @admin_bp.route("/dashboard")
 @login_required(role="admin")
 def dashboard():
@@ -39,6 +115,9 @@ def dashboard():
 def events():
     if request.method == "POST":
         action = request.form.get("action")
+        if action in ("create", "edit") and (not request.form.get("name", "").strip() or not request.form.get("date", "").strip() or not data.venue_by_name(request.form.get("venue", ""))):
+            flash("Event name, date, and a valid venue are required.", "error")
+            return redirect(url_for("admin.events"))
         if action == "create":
             new_event = {
                 "id": data.next_id("e", data.EVENTS),
@@ -69,10 +148,12 @@ def events():
         elif action == "delete":
             eid = request.form.get("id")
             data.EVENTS[:] = [e for e in data.EVENTS if e["id"] != eid]
+            for club in data.CLUBS:
+                club["event_ids"] = [event_id for event_id in club["event_ids"] if event_id != eid]
             flash("Event deleted.", "success")
         return redirect(url_for("admin.events"))
 
-    return render_template("admin/events.html", events=data.get_events())
+    return render_template("admin/events.html", events=data.get_events(), venues=data.VENUES, clubs_for_event=data.clubs_for_event)
 
 
 @admin_bp.route("/events/<event_id>/items", methods=["GET", "POST"])
@@ -257,7 +338,7 @@ def team_managers():
                         "assigned_events": assigned,
                     }
                 )
-                flash("Team manager created.", "success")
+                flash("Faculty coordinator created.", "success")
         elif action == "edit":
             uid = request.form.get("id")
             user = data.get_user_by_id(uid)
@@ -269,11 +350,17 @@ def team_managers():
                 new_pw = request.form.get("password", "").strip()
                 if new_pw:
                     user["password"] = new_pw
-                flash("Team manager updated.", "success")
+                flash("Faculty coordinator updated.", "success")
         elif action == "delete":
             uid = request.form.get("id")
-            data.USERS[:] = [u for u in data.USERS if u["id"] != uid]
-            flash("Team manager removed.", "success")
+            manager = data.get_user_by_id(uid)
+            if manager and manager["role"] == "manager":
+                data.USERS.remove(manager)
+                for club in data.CLUBS:
+                    club["coordinator_ids"] = [cid for cid in club["coordinator_ids"] if cid != uid]
+                flash("Faculty coordinator removed.", "success")
+            else:
+                flash("Faculty coordinator not found.", "error")
         return redirect(url_for("admin.team_managers"))
 
     managers = data.get_managers()
@@ -307,6 +394,9 @@ def data_entry():
                 )
                 flash("Participant added.", "success")
         elif entry_type == "event":
+            if not request.form.get("name", "").strip() or not request.form.get("date", "").strip() or not data.venue_by_name(request.form.get("venue", "")):
+                flash("Event name, date, and a valid venue are required.", "error")
+                return redirect(url_for("admin.data_entry"))
             data.EVENTS.append(
                 {
                     "id": data.next_id("e", data.EVENTS),
@@ -365,6 +455,7 @@ def data_entry():
         "admin/data_entry.html",
         events=data.get_events(),
         participants=data.get_participants(),
+        venues=data.VENUES,
     )
 
 

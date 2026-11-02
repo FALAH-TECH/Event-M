@@ -28,7 +28,7 @@
       <input type="hidden" name="entry_type" value="event" />
       <label class="field"><span>Name</span><input type="text" name="name" required /></label>
       <label class="field"><span>Date</span><input type="date" name="date" required /></label>
-      <label class="field"><span>Venue</span><input type="text" name="venue" required /></label>
+      <label class="field"><span>Venue</span><select name="venue" required><option value="">Select a venue…</option>{% for venue in venues %}<option value="{{ venue.name }}">{{ venue.name }}</option>{% endfor %}</select></label>
       <label class="field full"><span>Description</span><textarea name="description" rows="3"></textarea></label>
       <div class="form-actions"><button type="submit" class="btn btn-primary">Add event</button></div>
     </form>

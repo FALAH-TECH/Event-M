@@ -13,6 +13,7 @@
         <th>Name</th>
         <th>Date</th>
         <th>Venue</th>
+        <th>Clubs</th>
         <th>Items</th>
         <th>Actions</th>
       </tr>
@@ -26,6 +27,7 @@
         </td>
         <td>{{ e.date }}</td>
         <td>{{ e.venue }}</td>
+        <td>{% for club in clubs_for_event(e.id) %}<span class="tag">{{ club.name }}</span> {% else %}—{% endfor %}</td>
         <td>{{ e['items']|length }}</td>
         <td class="actions">
           <a href="{{ url_for('admin.event_items', event_id=e.id) }}" class="btn btn-ghost btn-sm">Items</a>
@@ -48,7 +50,7 @@
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="5" class="empty">No events yet.</td></tr>
+      <tr><td colspan="6" class="empty">No events yet.</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -67,7 +69,7 @@
       <label class="field"><span>Name</span><input type="text" name="name" id="eventName" required /></label>
       <label class="field"><span>Description</span><textarea name="description" id="eventDescription" rows="3"></textarea></label>
       <label class="field"><span>Date</span><input type="date" name="date" id="eventDate" required /></label>
-      <label class="field"><span>Venue</span><input type="text" name="venue" id="eventVenue" required /></label>
+      <label class="field"><span>Venue</span><select name="venue" id="eventVenue" required><option value="">Select a venue…</option>{% for venue in venues %}<option value="{{ venue.name }}">{{ venue.name }}</option>{% endfor %}</select></label>
       <div class="modal-actions">
         <button type="button" class="btn btn-ghost" data-modal-close>Cancel</button>
         <button type="submit" class="btn btn-primary">Save</button>
