@@ -1,8 +1,8 @@
 {% extends "layouts/app.html" %}
-{% block title %}Team Managers{% endblock %}
-{% block page_title %}Team Managers{% endblock %}
+{% block title %}Faculty Coordinators{% endblock %}
+{% block page_title %}Faculty Coordinators{% endblock %}
 {% block topbar_actions %}
-<button type="button" class="btn btn-primary" data-modal-open="managerModal" data-mode="create">Add Manager</button>
+<button type="button" class="btn btn-primary" data-modal-open="managerModal" data-mode="create">Add Faculty Coordinator</button>
 {% endblock %}
 
 {% block content %}
@@ -38,7 +38,7 @@
             data-college="{{ m.college }}"
             data-assigned="{{ (m.assigned_events or [])|join(',') }}"
           >Edit</button>
-          <form method="post" class="inline-form" onsubmit="return confirm('Remove this manager?');">
+          <form method="post" class="inline-form" onsubmit="return confirm('Remove this faculty coordinator?');">
             <input type="hidden" name="action" value="delete" />
             <input type="hidden" name="id" value="{{ m.id }}" />
             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
@@ -46,7 +46,7 @@
         </td>
       </tr>
       {% else %}
-      <tr><td colspan="5" class="empty">No team managers.</td></tr>
+      <tr><td colspan="5" class="empty">No faculty coordinators.</td></tr>
       {% endfor %}
     </tbody>
   </table>
@@ -56,7 +56,7 @@
   <div class="modal-backdrop" data-modal-close></div>
   <div class="modal-panel" role="dialog" aria-modal="true">
     <header class="modal-head">
-      <h2 id="managerModalTitle">Add Manager</h2>
+      <h2 id="managerModalTitle">Add Faculty Coordinator</h2>
       <button type="button" class="btn btn-ghost btn-icon" data-modal-close aria-label="Close">&times;</button>
     </header>
     <form method="post" class="form">
@@ -92,7 +92,7 @@ document.querySelectorAll('[data-modal-open="managerModal"]').forEach(function (
   btn.addEventListener('click', function () {
     var mode = btn.getAttribute('data-mode');
     document.getElementById('managerAction').value = mode === 'edit' ? 'edit' : 'create';
-    document.getElementById('managerModalTitle').textContent = mode === 'edit' ? 'Edit Manager' : 'Add Manager';
+    document.getElementById('managerModalTitle').textContent = mode === 'edit' ? 'Edit Faculty Coordinator' : 'Add Faculty Coordinator';
     document.getElementById('managerId').value = btn.getAttribute('data-id') || '';
     document.getElementById('managerName').value = btn.getAttribute('data-name') || '';
     document.getElementById('managerEmail').value = btn.getAttribute('data-email') || '';

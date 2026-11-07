@@ -11,6 +11,7 @@ from flask import (
 )
 
 import data
+import mysql.connector
 from routes.decorators import login_required
 
 manager_bp = Blueprint("manager", __name__)
@@ -43,6 +44,14 @@ def dashboard():
     )
 
 
+@manager_bp.route("/clubs")
+@login_required(role="manager")
+def clubs():
+    clubs = data.clubs_for_coordinator(session["user_id"])
+    # Club membership grants visibility only; existing assigned-event permissions remain unchanged.
+    return render_template("manager/clubs.html", clubs=clubs, events=data.get_events())
+
+
 @manager_bp.route("/participants", methods=["GET", "POST"])
 @login_required(role="manager")
 def participants():
@@ -69,46 +78,15 @@ def participants():
                 return redirect(url_for("manager.participants"))
 
             existing = data.get_user_by_email(email)
-            if existing:
-                if existing["role"] != "participant":
-                    flash("That email belongs to a non-participant account.", "error")
-                    return redirect(url_for("manager.participants"))
-                pid = existing["id"]
-            else:
-                pid = data.next_id("u", data.USERS)
-                data.USERS.append(
-                    {
-                        "id": pid,
-                        "name": name,
-                        "email": email,
-                        "password": "part123",
-                        "role": "participant",
-                        "college": college,
-                        "roll_number": roll_number,
-                    }
-                )
-
-            # Merge with existing registration for same event if present
-            existing_reg = next(
-                (
-                    r
-                    for r in data.REGISTRATIONS
-                    if r["participantId"] == pid and r["eventId"] == event_id
-                ),
-                None,
-            )
-            if existing_reg:
-                merged = list(dict.fromkeys(existing_reg["itemIds"] + item_ids))
-                existing_reg["itemIds"] = merged
-            else:
-                data.REGISTRATIONS.append(
-                    {
-                        "id": data.next_id("r", data.REGISTRATIONS),
-                        "participantId": pid,
-                        "eventId": event_id,
-                        "itemIds": item_ids,
-                    }
-                )
+            if existing and existing["role"] != "participant":
+                flash("That email belongs to a non-participant account.", "error")
+                return redirect(url_for("manager.participants"))
+            try:
+                data.register(existing["id"] if existing else None, event_id, item_ids,
+                              None if existing else {"name": name, "email": email, "college": college, "roll_number": roll_number})
+            except (ValueError, mysql.connector.IntegrityError) as exc:
+                flash(str(exc) if isinstance(exc, ValueError) else "Invalid or duplicate registration.", "error")
+                return redirect(url_for("manager.participants"))
             flash("Participant registered for selected items.", "success")
         return redirect(url_for("manager.participants"))
 
@@ -157,7 +135,7 @@ def events():
                 "participant_count": data.count_participants_for_event(e["id"]),
             }
         )
-    return render_template("manager/events.html", events=events_list)
+    return render_template("manager/events.html", events=events_list, clubs_for_event=data.clubs_for_event)
 
 
 @manager_bp.route("/schedule")
@@ -221,15 +199,15 @@ def results():
 def profile():
     user = data.get_user_by_id(session["user_id"])
     if request.method == "POST":
-        user["name"] = request.form.get("name", user["name"]).strip()
-        user["email"] = request.form.get("email", user["email"]).strip()
-        user["college"] = request.form.get("college", user.get("college", "")).strip()
-        new_pw = request.form.get("password", "").strip()
-        if new_pw:
-            user["password"] = new_pw
-        session["name"] = user["name"]
-        session["email"] = user["email"]
-        flash("Profile updated.", "success")
+        values = dict(request.form)
+        values["roll_number"] = user.get("roll_number")
+        try:
+            data.save_user(values, user["id"])
+            updated = data.get_user_by_id(user["id"])
+            session["name"], session["email"] = updated["name"], updated["email"]
+            flash("Profile updated.", "success")
+        except (ValueError, mysql.connector.IntegrityError):
+            flash("Unable to update profile; check your details.", "error")
         return redirect(url_for("manager.profile"))
 
     assigned = _assigned_events(user)

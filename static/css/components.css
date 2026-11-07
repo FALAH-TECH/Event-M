@@ -155,6 +155,7 @@
   flex: 1;
 }
 
+input:not([type]),
 input[type="text"],
 input[type="email"],
 input[type="password"],
@@ -252,7 +253,7 @@ textarea:focus {
 }
 
 .table .actions {
-  display: flex;
+  display: table-cell;
   flex-wrap: wrap;
   gap: 0.35rem;
   align-items: center;
@@ -433,4 +434,26 @@ textarea:focus {
   .form-grid {
     grid-template-columns: 1fr;
   }
+}
+
+/* Localized sizing and interaction refinements. */
+.field, .form-grid > *, .filter-bar > * { min-width: 0; }
+input, select, textarea { min-width: 0; max-width: 100%; }
+textarea { resize: vertical; }
+input[type="checkbox"] { accent-color: var(--accent); flex-shrink: 0; }
+.form-actions, .modal-actions { flex-wrap: wrap; }
+.table-wrap { max-width: 100%; }
+.table td { overflow-wrap: anywhere; }
+.table .actions > * { margin: 0.15rem 0.2rem 0.15rem 0; }
+.tab-list { overflow-x: auto; }
+.tab { flex-shrink: 0; }
+.modal-head { gap: 1rem; }
+.modal-head .btn-icon { flex-shrink: 0; }
+.modal-panel { max-height: calc(100dvh - 2rem); overscroll-behavior: contain; }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (max-width: 600px) {
+  .modal-panel { padding: 1rem; }
+  .checkbox-grid { grid-template-columns: minmax(0, 1fr); }
+  .filter-bar .field { min-width: 0; flex: 1 1 100%; }
 }

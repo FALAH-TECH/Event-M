@@ -1,0 +1,22 @@
+{% extends "layouts/app.html" %}
+{% block title %}{{ event.name }}{% endblock %}
+{% block page_title %}{{ event.name }}{% endblock %}
+{% block content %}
+<p>{{ event.description }}</p><p>{{ event.date }} · {{ event.venue }}</p>
+<form method="post" action="{{ url_for('participant.register_event', event_id=event.id) }}">
+  <div class="card-grid">
+    {% for row in activities %}
+    <article class="info-card">
+      <h2>{{ row.item.name }}</h2><p>{{ row.item.category }}</p>
+      <p>Rules: {{ row.item.rules or 'None specified' }}</p>
+      <p>{{ row.item.dateTime.replace('T', ' ') or 'Time not specified' }} · {{ row.item.venue or 'Venue not specified' }}</p>
+      <p>Capacity: {{ row.item.maxParticipants }} · Available seats: {{ row.available }}</p>
+      {% if row.registered %}<span class="tag">Registered</span>
+      {% elif not row.available %}<span class="tag">Full</span>
+      {% else %}<label><input type="checkbox" name="itemIds" value="{{ row.item.id }}"> Available — select activity</label>{% endif %}
+    </article>
+    {% else %}<p class="empty">No activities are available for this event.</p>{% endfor %}
+  </div>
+  {% if activities %}<p><button class="btn btn-primary" type="submit">Register</button></p>{% endif %}
+</form>
+{% endblock %}

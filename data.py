@@ -1,344 +1,288 @@
-"""
-Dummy data for the Event Management System.
-Stands in for a database until wired to a real backend.
-"""
-
-from copy import deepcopy
-
-USERS = [
-    {
-        "id": "u1",
-        "name": "Admin User",
-        "email": "admin@eventhub.edu",
-        "password": "admin123",
-        "role": "admin",
-        "college": "EventHub HQ",
-        "roll_number": None,
-    },
-    {
-        "id": "u2",
-        "name": "Priya Sharma",
-        "email": "priya@mit.edu",
-        "password": "manager123",
-        "role": "manager",
-        "college": "MIT College of Engineering",
-        "roll_number": None,
-        "assigned_events": ["e1", "e2"],
-    },
-    {
-        "id": "u3",
-        "name": "Rahul Mehta",
-        "email": "rahul@vit.edu",
-        "password": "manager123",
-        "role": "manager",
-        "college": "VIT University",
-        "roll_number": None,
-        "assigned_events": ["e1"],
-    },
-    {
-        "id": "u4",
-        "name": "Ananya Reddy",
-        "email": "ananya@student.edu",
-        "password": "part123",
-        "role": "participant",
-        "college": "MIT College of Engineering",
-        "roll_number": "MIT2024001",
-    },
-    {
-        "id": "u5",
-        "name": "Karthik Nair",
-        "email": "karthik@student.edu",
-        "password": "part123",
-        "role": "participant",
-        "college": "VIT University",
-        "roll_number": "VIT2024088",
-    },
-    {
-        "id": "u6",
-        "name": "Sneha Patel",
-        "email": "sneha@student.edu",
-        "password": "part123",
-        "role": "participant",
-        "college": "MIT College of Engineering",
-        "roll_number": "MIT2024015",
-    },
-    {
-        "id": "u7",
-        "name": "Arjun Das",
-        "email": "arjun@student.edu",
-        "password": "part123",
-        "role": "participant",
-        "college": "SRM Institute",
-        "roll_number": "SRM2024033",
-    },
-    {
-        "id": "u8",
-        "name": "Meera Iyer",
-        "email": "meera@student.edu",
-        "password": "part123",
-        "role": "participant",
-        "college": "VIT University",
-        "roll_number": "VIT2024120",
-    },
-]
-
-EVENTS = [
-    {
-        "id": "e1",
-        "name": "Aether Tech Fest 2026",
-        "description": "Annual inter-college technology festival featuring coding, robotics, and design competitions.",
-        "date": "2026-09-15",
-        "venue": "Main Campus Auditorium",
-        "banner": "/static/img/banner-tech.svg",
-        "published": True,
-        "items": [
-            {
-                "id": "i1",
-                "eventId": "e1",
-                "name": "CodeSprint",
-                "category": "Programming",
-                "dateTime": "2026-09-15T10:00",
-                "venue": "Lab Block A",
-                "rules": "Teams of 2. 3-hour coding contest. Languages: C++, Java, Python.",
-                "maxParticipants": 60,
-            },
-            {
-                "id": "i2",
-                "eventId": "e1",
-                "name": "RoboRace",
-                "category": "Robotics",
-                "dateTime": "2026-09-15T14:00",
-                "venue": "Sports Ground",
-                "rules": "Line-following robots only. Track obstacles allowed. Max bot size 30cm.",
-                "maxParticipants": 40,
-            },
-            {
-                "id": "i3",
-                "eventId": "e1",
-                "name": "UI/UX Challenge",
-                "category": "Design",
-                "dateTime": "2026-09-16T09:30",
-                "venue": "Design Studio",
-                "rules": "Individual. Redesign a given app flow in 4 hours. Figma preferred.",
-                "maxParticipants": 50,
-            },
-            {
-                "id": "i4",
-                "eventId": "e1",
-                "name": "Hackathon Night",
-                "category": "Hackathon",
-                "dateTime": "2026-09-16T18:00",
-                "venue": "Innovation Hub",
-                "rules": "Teams of 3–4. 12-hour build. Theme announced on-site.",
-                "maxParticipants": 80,
-            },
-        ],
-    },
-    {
-        "id": "e2",
-        "name": "Rhythm Cultural Night",
-        "description": "Celebrating arts and culture with music, dance, and drama competitions across colleges.",
-        "date": "2026-10-05",
-        "venue": "Open Air Amphitheatre",
-        "banner": "/static/img/banner-cultural.svg",
-        "published": True,
-        "items": [
-            {
-                "id": "i5",
-                "eventId": "e2",
-                "name": "Solo Singing",
-                "category": "Music",
-                "dateTime": "2026-10-05T11:00",
-                "venue": "Amphitheatre Stage",
-                "rules": "Max 5 minutes. Karaoke tracks allowed. Original or covers.",
-                "maxParticipants": 30,
-            },
-            {
-                "id": "i6",
-                "eventId": "e2",
-                "name": "Group Dance",
-                "category": "Dance",
-                "dateTime": "2026-10-05T15:00",
-                "venue": "Amphitheatre Stage",
-                "rules": "4–10 members. Max 8 minutes. Props allowed.",
-                "maxParticipants": 100,
-            },
-            {
-                "id": "i7",
-                "eventId": "e2",
-                "name": "Short Film",
-                "category": "Film",
-                "dateTime": "2026-10-06T10:00",
-                "venue": "Media Hall",
-                "rules": "Max 10 minutes runtime. Submit MP4 by deadline. Any genre.",
-                "maxParticipants": 40,
-            },
-            {
-                "id": "i8",
-                "eventId": "e2",
-                "name": "Debate Finals",
-                "category": "Literary",
-                "dateTime": "2026-10-06T14:00",
-                "venue": "Seminar Hall 2",
-                "rules": "Teams of 2. British Parliamentary format. Topics given 30 min prior.",
-                "maxParticipants": 32,
-            },
-        ],
-    },
-]
-
-# Registrations: participant can register for multiple items within same event
-REGISTRATIONS = [
-    {"id": "r1", "participantId": "u4", "eventId": "e1", "itemIds": ["i1", "i3"]},
-    {"id": "r2", "participantId": "u5", "eventId": "e1", "itemIds": ["i1", "i2", "i4"]},
-    {"id": "r3", "participantId": "u6", "eventId": "e1", "itemIds": ["i2", "i3"]},
-    {"id": "r4", "participantId": "u7", "eventId": "e1", "itemIds": ["i1", "i4"]},
-    {"id": "r5", "participantId": "u4", "eventId": "e2", "itemIds": ["i5", "i8"]},
-    {"id": "r6", "participantId": "u8", "eventId": "e2", "itemIds": ["i5", "i6"]},
-    {"id": "r7", "participantId": "u5", "eventId": "e2", "itemIds": ["i7"]},
-    {"id": "r8", "participantId": "u6", "eventId": "e2", "itemIds": ["i6", "i8"]},
-]
-
-# Per-item results
-ITEM_RESULTS = [
-    {"id": "ir1", "itemId": "i1", "participantId": "u5", "rank": 1, "score": 95, "medal": "Gold", "published": True},
-    {"id": "ir2", "itemId": "i1", "participantId": "u4", "rank": 2, "score": 88, "medal": "Silver", "published": True},
-    {"id": "ir3", "itemId": "i1", "participantId": "u7", "rank": 3, "score": 82, "medal": "Bronze", "published": True},
-    {"id": "ir4", "itemId": "i2", "participantId": "u6", "rank": 1, "score": 90, "medal": "Gold", "published": True},
-    {"id": "ir5", "itemId": "i2", "participantId": "u5", "rank": 2, "score": 85, "medal": "Silver", "published": True},
-    {"id": "ir6", "itemId": "i3", "participantId": "u4", "rank": 1, "score": 92, "medal": "Gold", "published": False},
-    {"id": "ir7", "itemId": "i5", "participantId": "u8", "rank": 1, "score": 94, "medal": "Gold", "published": True},
-    {"id": "ir8", "itemId": "i5", "participantId": "u4", "rank": 2, "score": 87, "medal": "Silver", "published": True},
-]
-
-# Per-event aggregate / overall results
-EVENT_RESULTS = [
-    {
-        "id": "er1",
-        "eventId": "e1",
-        "entries": [
-            {"college": "VIT University", "rank": 1, "points": 120, "note": "Strong showing in CodeSprint & RoboRace"},
-            {"college": "MIT College of Engineering", "rank": 2, "points": 110, "note": "Top in UI/UX"},
-            {"college": "SRM Institute", "rank": 3, "points": 75, "note": "Hackathon finalists"},
-        ],
-        "published": True,
-    },
-    {
-        "id": "er2",
-        "eventId": "e2",
-        "entries": [
-            {"college": "VIT University", "rank": 1, "points": 100, "note": "Solo Singing & Group Dance"},
-            {"college": "MIT College of Engineering", "rank": 2, "points": 90, "note": "Debate Finals"},
-        ],
-        "published": False,
-    },
-]
+"""Repository translating the MySQL schema into the dictionaries used by views."""
+from contextlib import contextmanager
+from datetime import date, datetime
+from werkzeug.security import generate_password_hash
+import database
 
 
-def get_users():
-    return USERS
+@contextmanager
+def cursor(write=False):
+    with database.transaction() as connection:
+        cur = connection.cursor(dictionary=True)
+        try:
+            yield cur
+        finally:
+            cur.close()
 
 
-def get_user_by_email(email):
-    email_l = (email or "").strip().lower()
-    for u in USERS:
-        if u["email"].lower() == email_l:
-            return u
-    return None
+def fetch(sql, params=()):
+    with cursor() as c:
+        c.execute(sql, params)
+        return c.fetchall()
 
 
-def get_user_by_id(user_id):
-    for u in USERS:
-        if u["id"] == user_id:
-            return u
-    return None
+def one(sql, params=()):
+    rows = fetch(sql, params)
+    return rows[0] if rows else None
+
+
+def _user(row):
+    if row:
+        row['assigned_events'] = [r['event_id'] for r in fetch('SELECT event_id FROM coordinator_events WHERE coordinator_id=%s', (row['id'],))] if row['role'] == 'manager' else []
+    return row
+
+USER_SQL = 'SELECT u.user_id AS id,u.name,u.email,u.password_hash,u.role,c.name AS college,u.roll_number FROM users u LEFT JOIN colleges c ON c.college_id=u.college_id'
+
+def get_users(): return [_user(r) for r in fetch(USER_SQL)]
+def get_user_by_id(uid): return _user(one(USER_SQL + ' WHERE u.user_id=%s', (uid,)))
+def get_user_by_email(email): return _user(one(USER_SQL + ' WHERE u.email=%s', ((email or '').strip(),)))
+def get_managers(): return [u for u in get_users() if u['role'] == 'manager']
+def get_participants(): return [u for u in get_users() if u['role'] == 'participant']
 
 
 def get_events():
-    return EVENTS
+    events = fetch('SELECT e.event_id AS id,e.name,e.description,e.event_date AS date,e.banner,e.published,v.venue_name AS venue FROM events e JOIN venues v ON v.venue_id=e.venue_id ORDER BY e.event_date,e.name')
+    items = fetch('SELECT a.activity_id AS id,a.event_id AS eventId,a.name,a.category,a.rules,a.max_participants AS maxParticipants,s.starts_at AS dateTime,v.venue_name AS venue FROM activities a LEFT JOIN schedules s ON s.activity_id=a.activity_id LEFT JOIN venues v ON v.venue_id=s.venue_id ORDER BY s.starts_at,a.name')
+    for e in events:
+        if isinstance(e['date'], date): e['date'] = e['date'].isoformat()
+        e['items'] = [i for i in items if i['eventId'] == e['id']]
+        for i in e['items']:
+            if isinstance(i['dateTime'], datetime): i['dateTime'] = i['dateTime'].isoformat(timespec='minutes')
+            i['dateTime'] = i['dateTime'] or ''
+            i['category'] = i['category'] or ''
+    return events
 
-
-def get_event_by_id(event_id):
-    for e in EVENTS:
-        if e["id"] == event_id:
-            return e
-    return None
-
-
-def get_item_by_id(item_id):
-    for e in EVENTS:
-        for item in e["items"]:
-            if item["id"] == item_id:
-                return item, e
+def get_event_by_id(eid): return next((e for e in get_events() if e['id'] == eid), None)
+def get_item_by_id(iid):
+    for e in get_events():
+        for i in e['items']:
+            if i['id'] == iid: return i, e
     return None, None
 
+def get_venues(): return fetch('SELECT venue_id AS id,venue_name AS name FROM venues ORDER BY venue_name')
+def venue_by_name(name): return one('SELECT venue_id AS id,venue_name AS name FROM venues WHERE venue_name=%s', (name,))
 
-def get_managers():
-    return [u for u in USERS if u["role"] == "manager"]
+def get_clubs():
+    clubs = fetch('SELECT club_id AS id,name,description FROM clubs ORDER BY name')
+    events = fetch('SELECT club_id,event_id FROM club_events')
+    coords = fetch('SELECT club_id,coordinator_id FROM club_coordinators')
+    for c in clubs:
+        c['event_ids'] = [r['event_id'] for r in events if r['club_id'] == c['id']]
+        c['coordinator_ids'] = [r['coordinator_id'] for r in coords if r['club_id'] == c['id']]
+    return clubs
 
-
-def get_participants():
-    return [u for u in USERS if u["role"] == "participant"]
-
+def clubs_for_event(eid): return [c for c in get_clubs() if eid in c['event_ids']]
+def clubs_for_coordinator(uid): return [c for c in get_clubs() if uid in c['coordinator_ids']]
 
 def get_registrations():
-    return REGISTRATIONS
+    rows = fetch('SELECT registration_id AS id,participant_id AS participantId,event_id AS eventId FROM registrations')
+    choices = fetch('SELECT registration_id,activity_id FROM registration_activities')
+    for r in rows: r['itemIds'] = [i['activity_id'] for i in choices if i['registration_id'] == r['id']]
+    return rows
 
-
-def get_registrations_for_participant(participant_id):
-    return [r for r in REGISTRATIONS if r["participantId"] == participant_id]
-
-
-def get_registrations_for_event(event_id):
-    return [r for r in REGISTRATIONS if r["eventId"] == event_id]
-
-
-def count_participants_for_item(item_id):
-    return sum(1 for r in REGISTRATIONS if item_id in r["itemIds"])
-
-
-def count_participants_for_event(event_id):
-    ids = {r["participantId"] for r in REGISTRATIONS if r["eventId"] == event_id}
-    return len(ids)
-
+def get_registrations_for_participant(uid): return [r for r in get_registrations() if r['participantId'] == uid]
+def get_registrations_for_event(eid): return [r for r in get_registrations() if r['eventId'] == eid]
+def count_participants_for_item(iid): return one('SELECT COUNT(*) AS n FROM registration_activities WHERE activity_id=%s',(iid,))['n']
+def count_participants_for_event(eid): return one('SELECT COUNT(*) AS n FROM registrations WHERE event_id=%s',(eid,))['n']
 
 def get_item_results(item_id=None, published_only=False):
-    results = ITEM_RESULTS
-    if item_id:
-        results = [r for r in results if r["itemId"] == item_id]
-    if published_only:
-        results = [r for r in results if r.get("published")]
-    return results
+    sql = 'SELECT result_id AS id,activity_id AS itemId,participant_id AS participantId,position AS `rank`,score,medal,published FROM activity_results WHERE 1=1'
+    args = []
+    if item_id: sql += ' AND activity_id=%s'; args.append(item_id)
+    if published_only: sql += ' AND published=1'
+    return fetch(sql, tuple(args))
+
+def get_event_result(eid, published_only=False):
+    row = one('SELECT event_result_id AS id,event_id AS eventId,published FROM event_results WHERE event_id=%s' + (' AND published=1' if published_only else ''), (eid,))
+    if row: row['entries'] = fetch('SELECT c.name AS college,s.position AS `rank`,s.points,s.note FROM event_standings s JOIN colleges c ON c.college_id=s.college_id WHERE s.event_result_id=%s ORDER BY s.position', (row['id'],))
+    return row
 
 
-def get_event_result(event_id, published_only=False):
-    for er in EVENT_RESULTS:
-        if er["eventId"] == event_id:
-            if published_only and not er.get("published"):
-                return None
-            return er
-    return None
+def _college(c, name):
+    if not name: return None
+    c.execute('INSERT INTO colleges (college_id,name) VALUES (%s,%s) ON DUPLICATE KEY UPDATE name=VALUES(name)', (database.new_id('cl'), name))
+    c.execute('SELECT college_id FROM colleges WHERE name=%s', (name,))
+    return c.fetchone()['college_id']
+
+def save_user(values, uid=None, assignments=None):
+    name, email = values.get('name','').strip(), values.get('email','').strip()
+    password = values.get('password','')
+    if not name or not email or '@' not in email: raise ValueError('A name and valid email are required.')
+    if (not uid and len(password) < 6) or (password and len(password) < 6): raise ValueError('Password must be at least 6 characters.')
+    with cursor(True) as c:
+        college = _college(c, values.get('college','').strip())
+        if uid:
+            c.execute('UPDATE users SET name=%s,email=%s,college_id=%s,roll_number=%s WHERE user_id=%s', (name,email,college,values.get('roll_number') or None,uid))
+            if password: c.execute('UPDATE users SET password_hash=%s WHERE user_id=%s', (generate_password_hash(password),uid))
+        else:
+            uid = database.new_id('u')
+            c.execute('INSERT INTO users (user_id,name,email,password_hash,role,college_id,roll_number) VALUES (%s,%s,%s,%s,%s,%s,%s)', (uid,name,email,generate_password_hash(password),values['role'],college,values.get('roll_number') or None))
+        if assignments is not None:
+            c.execute('DELETE FROM coordinator_events WHERE coordinator_id=%s', (uid,))
+            for eid in set(assignments): c.execute('INSERT INTO coordinator_events (coordinator_id,event_id) VALUES (%s,%s)', (uid,eid))
+    return uid
+
+def delete_user(uid):
+    with cursor(True) as c:
+        c.execute('DELETE FROM users WHERE user_id=%s AND role=%s', (uid,'manager'))
+
+def save_venue(name, vid=None):
+    name = name.strip()
+    if not name: raise ValueError('Venue name is required.')
+    with cursor(True) as c:
+        if vid: c.execute('UPDATE venues SET venue_name=%s WHERE venue_id=%s', (name,vid))
+        else: c.execute('INSERT INTO venues (venue_id,venue_name) VALUES (%s,%s)', (database.new_id('v'),name))
+
+def delete_venue(vid):
+    with cursor(True) as c: c.execute('DELETE FROM venues WHERE venue_id=%s', (vid,))
+
+def _venue(c, name):
+    c.execute('SELECT venue_id FROM venues WHERE venue_name=%s', (name,))
+    row = c.fetchone()
+    if not row: raise ValueError('Select a valid venue.')
+    return row['venue_id']
+
+def next_event_id(c):
+    """Allocate under a connection-scoped lock held through commit and close.
+
+    FOR UPDATE is a current read even if an earlier lookup opened an InnoDB
+    repeatable-read snapshot while this connection was waiting for the lock.
+    """
+    c.execute('SELECT GET_LOCK(%s, %s) AS acquired', ('aether.events.sequential-id', 10))
+    if c.fetchone()['acquired'] != 1:
+        raise ValueError('Event ID allocation is busy. Please try again.')
+    c.execute("SELECT event_id FROM events WHERE REGEXP_LIKE(event_id, '^e[0-9]+$', 'c') FOR UPDATE")
+    highest = max((int(row['event_id'][1:]) for row in c.fetchall()), default=3)
+    event_id = 'e' + str(max(3, highest) + 1)
+    if len(event_id) > 40:
+        raise ValueError('No sequential event IDs remain within the database ID limit.')
+    return event_id
 
 
-def next_id(prefix, collection, key="id"):
-    nums = []
-    for item in collection:
-        raw = item.get(key, "")
-        if isinstance(raw, str) and raw.startswith(prefix):
+def save_event(values, eid=None):
+    name = values.get('name','').strip()
+    if not name: raise ValueError('Event name is required.')
+    try: date.fromisoformat(values.get('date',''))
+    except ValueError: raise ValueError('Enter a valid event date.')
+    with cursor(True) as c:
+        venue = _venue(c, values.get('venue',''))
+        args = (name,values.get('description','').strip(),values['date'],venue)
+        if eid: c.execute('UPDATE events SET name=%s,description=%s,event_date=%s,venue_id=%s WHERE event_id=%s', (*args,eid))
+        else: c.execute('INSERT INTO events (event_id,name,description,event_date,venue_id,banner,published) VALUES (%s,%s,%s,%s,%s,%s,1)', (next_event_id(c),*args,'/static/img/banner-tech.svg'))
+
+def delete_event(eid):
+    with cursor(True) as c: c.execute('DELETE FROM events WHERE event_id=%s',(eid,))
+
+def save_item(eid, values, iid=None):
+    name = values.get('name','').strip()
+    try:
+        capacity = int(values.get('maxParticipants') or 50)
+        starts = datetime.fromisoformat(values.get('dateTime',''))
+        if not name or capacity < 1: raise ValueError()
+    except ValueError: raise ValueError('Enter a valid activity name, time and positive capacity.')
+    with cursor(True) as c:
+        venue = _venue(c, values.get('venue','').strip())
+        args = (name,values.get('category','').strip(),values.get('rules','').strip(),capacity)
+        if iid:
+            c.execute('UPDATE activities SET name=%s,category=%s,rules=%s,max_participants=%s WHERE activity_id=%s AND event_id=%s', (*args,iid,eid))
+            c.execute('SELECT activity_id FROM activities WHERE activity_id=%s AND event_id=%s', (iid,eid))
+            if not c.fetchone(): raise ValueError('Activity not found in event.')
+            c.execute('INSERT INTO schedules (activity_id,venue_id,starts_at) VALUES (%s,%s,%s) ON DUPLICATE KEY UPDATE venue_id=VALUES(venue_id),starts_at=VALUES(starts_at)', (iid,venue,starts))
+        else:
+            iid=database.new_id('i')
+            c.execute('INSERT INTO activities (activity_id,event_id,name,category,rules,max_participants) VALUES (%s,%s,%s,%s,%s,%s)', (iid,eid,*args))
+            c.execute('INSERT INTO schedules (activity_id,venue_id,starts_at) VALUES (%s,%s,%s)',(iid,venue,starts))
+
+def delete_item(eid,iid):
+    with cursor(True) as c:
+        # Schedule is owned by the activity. Other dependencies remain protected by FKs.
+        c.execute('DELETE FROM schedules WHERE activity_id=%s AND activity_id IN (SELECT activity_id FROM activities WHERE event_id=%s)',(iid,eid))
+        c.execute('DELETE FROM activities WHERE activity_id=%s AND event_id=%s',(iid,eid))
+
+def save_club(values, cid=None):
+    name=values.get('name','').strip()
+    if not name: raise ValueError('Club name is required.')
+    events=set(values.getlist('event_ids')); coordinators=set(values.getlist('coordinator_ids'))
+    with cursor(True) as c:
+        for uid in coordinators:
+            c.execute('SELECT user_id FROM users WHERE user_id=%s AND role=%s',(uid,'manager'))
+            if not c.fetchone(): raise ValueError('Select valid faculty coordinators.')
+        if cid:
+            c.execute('UPDATE clubs SET name=%s,description=%s WHERE club_id=%s',(name,values.get('description','').strip(),cid))
+            c.execute('DELETE FROM club_events WHERE club_id=%s',(cid,)); c.execute('DELETE FROM club_coordinators WHERE club_id=%s',(cid,))
+        else:
+            cid=database.new_id('c'); c.execute('INSERT INTO clubs (club_id,name,description) VALUES (%s,%s,%s)',(cid,name,values.get('description','').strip()))
+        for eid in events: c.execute('INSERT INTO club_events (club_id,event_id) VALUES (%s,%s)',(cid,eid))
+        for uid in coordinators: c.execute('INSERT INTO club_coordinators (club_id,coordinator_id) VALUES (%s,%s)',(cid,uid))
+
+def delete_club(cid):
+    with cursor(True) as c: c.execute('DELETE FROM clubs WHERE club_id=%s',(cid,))
+
+def register(pid, eid, item_ids, new_user=None):
+    """Register atomically; all callers serialize on the published event row."""
+    item_ids = sorted(set(item_ids))
+    if not item_ids:
+        raise ValueError('Select at least one activity.')
+    with cursor(True) as c:
+        c.execute('SELECT event_id FROM events WHERE event_id=%s AND published=1 FOR UPDATE', (eid,))
+        if not c.fetchone():
+            raise ValueError('Event not found or not published.')
+        if new_user:
+            name = new_user.get('name', '').strip(); email = new_user.get('email', '').strip()
+            if not name or '@' not in email or not new_user.get('college', '').strip() or not new_user.get('roll_number', '').strip():
+                raise ValueError('Participant details are required.')
+            college = _college(c, new_user['college'].strip()); pid = database.new_id('u')
+            c.execute('INSERT INTO users (user_id,name,email,password_hash,role,college_id,roll_number) VALUES (%s,%s,%s,%s,%s,%s,%s)', (pid,name,email,generate_password_hash('part123'),'participant',college,new_user['roll_number'].strip()))
+        c.execute('SELECT user_id FROM users WHERE user_id=%s AND role=%s FOR UPDATE', (pid, 'participant'))
+        if not c.fetchone():
+            raise ValueError('Select a valid participant.')
+        c.execute('SELECT registration_id FROM registrations WHERE participant_id=%s AND event_id=%s FOR UPDATE', (pid, eid))
+        existing = c.fetchone()
+        rid = existing['registration_id'] if existing else None
+        additions = []
+        for iid in item_ids:
+            c.execute('SELECT activity_id,max_participants FROM activities WHERE activity_id=%s AND event_id=%s FOR UPDATE', (iid, eid))
+            activity = c.fetchone()
+            if not activity:
+                raise ValueError('Each activity must belong to the selected event.')
+            c.execute('SELECT registration_id FROM registration_activities WHERE activity_id=%s FOR UPDATE', (iid,))
+            registrations = c.fetchall()
+            if rid and any(row['registration_id'] == rid for row in registrations):
+                continue
+            if len(registrations) >= activity['max_participants']:
+                raise ValueError('An activity is full. Please review available seats.')
+            additions.append(iid)
+        if not rid:
+            rid = database.new_id('r')
+            c.execute('INSERT INTO registrations (registration_id,participant_id,event_id) VALUES (%s,%s,%s)', (rid, pid, eid))
+        for iid in additions:
+            c.execute('INSERT INTO registration_activities (registration_id,activity_id,event_id) VALUES (%s,%s,%s)', (rid, iid, eid))
+        return len(additions)
+
+
+def save_item_result(eid,iid,pid,rank,score,medal,published):
+    try:
+        rank=int(rank or 0); score=float(score or 0)
+        if rank < 0 or score < 0 or score != score or score > 999999.99 or len(medal)>20: raise ValueError()
+    except ValueError: raise ValueError('Enter a valid rank and score.')
+    with cursor(True) as c:
+        c.execute('SELECT ra.activity_id FROM registration_activities ra JOIN registrations r ON r.registration_id=ra.registration_id WHERE ra.event_id=%s AND ra.activity_id=%s AND r.participant_id=%s',(eid,iid,pid))
+        if not c.fetchone(): raise ValueError('Participant must be registered for this activity.')
+        c.execute('INSERT INTO activity_results (result_id,activity_id,participant_id,position,score,medal,published) VALUES (%s,%s,%s,%s,%s,%s,%s) ON DUPLICATE KEY UPDATE position=VALUES(position),score=VALUES(score),medal=VALUES(medal),published=VALUES(published)',(database.new_id('ir'),iid,pid,rank,score,medal or None,published))
+
+def publish_item(eid,iid):
+    with cursor(True) as c: c.execute('UPDATE activity_results SET published=1 WHERE activity_id=%s AND activity_id IN (SELECT activity_id FROM activities WHERE event_id=%s)',(iid,eid))
+
+def save_event_result(eid,entries,published):
+    with cursor(True) as c:
+        rid=database.new_id('er')
+        c.execute('INSERT INTO event_results (event_result_id,event_id,published) VALUES (%s,%s,%s) ON DUPLICATE KEY UPDATE published=VALUES(published)',(rid,eid,published))
+        c.execute('SELECT event_result_id FROM event_results WHERE event_id=%s',(eid,)); rid=c.fetchone()['event_result_id']
+        c.execute('DELETE FROM event_standings WHERE event_result_id=%s',(rid,))
+        for entry in entries:
             try:
-                nums.append(int(raw[len(prefix) :]))
-            except ValueError:
-                pass
-    n = max(nums) + 1 if nums else 1
-    return f"{prefix}{n}"
-
-
-def snapshot():
-    """Deep copy of all mutable stores (useful for resets in tests)."""
-    return {
-        "users": deepcopy(USERS),
-        "events": deepcopy(EVENTS),
-        "registrations": deepcopy(REGISTRATIONS),
-        "item_results": deepcopy(ITEM_RESULTS),
-        "event_results": deepcopy(EVENT_RESULTS),
-    }
+                rank=int(entry['rank']); points=int(entry['points'])
+                if rank < 1 or points < 0: raise ValueError()
+            except ValueError: raise ValueError('Standings require a positive rank and nonnegative points.')
+            college=_college(c,entry['college'])
+            c.execute('INSERT INTO event_standings (event_result_id,college_id,position,points,note) VALUES (%s,%s,%s,%s,%s)',(rid,college,rank,points,entry['note']))

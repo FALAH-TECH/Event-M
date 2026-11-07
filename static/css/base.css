@@ -631,3 +631,26 @@ p {
     margin-left: 72px;
   }
 }
+
+/* Preserve the shell while allowing long labels and narrow viewports. */
+:root { color-scheme: dark; }
+.sidebar-user { overflow-wrap: anywhere; }
+.sidebar-nav { min-height: 0; padding-bottom: 0.75rem; }
+.topbar { height: auto; min-height: var(--topbar-h); flex-wrap: wrap; padding-block: 0.75rem; }
+.topbar-title { min-width: 0; flex: 1; overflow-wrap: anywhere; }
+.topbar-actions { flex-wrap: wrap; }
+.sidebar-toggle { flex-shrink: 0; }
+.flash-stack { max-width: min(360px, calc(100vw - 2rem)); }
+.app-shell .flash-stack { position: relative; top: auto; right: auto; margin: 1rem 1rem 0 auto; }
+.flash { overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .topbar { padding-inline: 1rem; }
+  .topbar-actions:not(:empty) { width: 100%; justify-content: flex-end; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
+}
+
+/* Keep navigation labels on one axis and one row. */
+.nav-link > span { white-space: nowrap; }
+.sidebar-nav .nav-link { flex-shrink: 0; }

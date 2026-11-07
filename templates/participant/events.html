@@ -1,0 +1,14 @@
+{% extends "layouts/app.html" %}
+{% block title %}Browse Events{% endblock %}
+{% block page_title %}Browse Events{% endblock %}
+{% block content %}
+<div class="card-grid">
+  {% for event in events %}
+  <article class="info-card">
+    <h2>{{ event.name }}</h2><p>{{ event.description }}</p>
+    <p>{{ event.date }} · {{ event.venue }}</p>
+    <a href="{{ url_for('participant.event_detail', event_id=event.id) }}">Event Details / Register</a>
+  </article>
+  {% else %}<p class="empty">No published events are available.</p>{% endfor %}
+</div>
+{% endblock %}
