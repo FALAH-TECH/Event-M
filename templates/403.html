@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Not Found{% endblock %}
+{% block body_class %}public-page{% endblock %}
+
+{% block body %}
+<div class="error-page">
+  <p class="eyebrow">404</p>
+  <h1 class="hero-brand">Page not found</h1>
+  <p class="hero-desc">That route doesn’t exist in EventHub.</p>
+  <div class="hero-cta">
+    {% if session.get('user_id') %}
+      {% if session.get('role') == 'admin' %}
+        <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary">Back to dashboard</a>
+      {% elif session.get('role') == 'manager' %}
+        <a href="{{ url_for('manager.dashboard') }}" class="btn btn-primary">Back to dashboard</a>
+      {% else %}
+        <a href="{{ url_for('participant.home') }}" class="btn btn-primary">Back to home</a>
+      {% endif %}
+    {% else %}
+      <a href="{{ url_for('landing') }}" class="btn btn-primary">Go home</a>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
